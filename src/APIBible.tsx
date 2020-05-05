@@ -4,7 +4,7 @@ const baseUrl = "https://api.scripture.api.bible/v1/";
 
 const key = "7b49bb79780270ec2aa314396b820813"
 
-async function apiFetch(path: string) {
+async function apiFetch(path: string): Promise<any> {
     return (await fetch(baseUrl + path, {
         headers: new Headers({"api-key": key}),
         method: "GET",
@@ -48,16 +48,17 @@ export class Book {
 export class Version {
     name: string;
     id: string;
-    books: Array<Book>? = null;
+    books?: Array<Book>;
 
     constructor(name: string, id: string) {
         this.name = name;
         this.id = id;
     }
 
-    async getBooks(): Array<Book> {
+    async getBooks(): Promise<Array<Book>> {
         if (!this.books) {
-            response = await apiFetch("bibles/" + this.id + "/books");
+            const response = await apiFetch("bibles/" + this.id + "/books");
+            // @ts-ignore
             this.books = _.map(response.data, book => new Book(...book));
         }
         return this.books

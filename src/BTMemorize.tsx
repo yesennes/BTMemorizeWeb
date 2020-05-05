@@ -1,4 +1,7 @@
 import React from 'react';
+import _ from "lodash";
+
+import * as api from './APIBible';
 
 type State = {
 }
@@ -13,8 +16,8 @@ export default class BTMemorize extends React.Component<{}, State> {
     }
 
     render(){
-        const versionSelector = _.map(api.getVersions(), (version) =>
-            <option value={version}>{version}</option>
+        const versionSelector = _.map(api.versions, (version) =>
+            <option value={version.id}>{version.name}</option>
         )
         return (
             <div className="App">
