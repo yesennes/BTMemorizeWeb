@@ -1,20 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 import * as api from './APIBible';
-
+import React from 'react';
 import _ from "lodash";
 
 type State = {
+    versionSelected: string,
+    bookSelected: string?,
+    chapterSelected: number?,
 }
 
-const key = "7b49bb79780270ec2aa314396b820813"
-
-export default class BTMemorize extends React.Component<{}, State> {
+export default class ChapterSelector extends React.Component<{}, State> {
     constructor(props: {}) {
         super(props);
         this.state = {
+            versionSelected: api.getVersions()[0],
         }
+    }
+
+    _onVersionSelected(version) {
+
     }
 
     render(){
