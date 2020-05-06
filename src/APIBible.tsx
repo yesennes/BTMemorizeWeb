@@ -19,12 +19,12 @@ export class Chapter {
     number: number;
     bookId: string;
 
-    constructor(name: string, id: string, bibleId: string, number:string, bookId: string) {
-        this.name = name;
-        this.id = id;
-        this.bibleId = bibleId;
-        this.number = parseInt(number)
-        this.bookId = bookId;
+    constructor(obj: any) {
+        this.name = obj.name;
+        this.id = obj.id;
+        this.bibleId = obj.bibleId;
+        this.number = parseInt(obj.number)
+        this.bookId = obj.bookId;
     }
 }
 
@@ -34,12 +34,15 @@ export class Book {
     bibleId: string;
     chapters: Array<Chapter>;
 
-    constructor(name: string, id: string, bibleId: string, chapters: any) {
-        this.name = name;
-        this.id = id;
-        this.bibleId = bibleId;
-        // @ts-ignore
-        this.chapters = _.map(chapters, chapter => new Chapter(...chapter));
+    constructor(obj: any) {
+        this.name = obj.name;
+        this.id = obj.id;
+        this.bibleId = obj.bibleId;
+        this.chapters = _.chain(obj.chapters)
+            // Filter out introductions etc
+            .filter(chapter => !isNaN(chapter.number))
+            .map(chapter => new Chapter(chapter))
+            .value();
     }
 }
 
@@ -57,19 +60,20 @@ export class Version {
 
     async getBooks(): Promise<Array<Book>> {
         if (!this.books) {
-            const response = await apiFetch("bibles/" + this.id + "/books");
-            // @ts-ignore
-            this.books = _.map(response.data, book => new Book(...book));
+            const response = await apiFetch("bibles/" + this.id + "/books?include-chapters=true");
+            this.books = _.map(response.data, book => new Book(book));
         }
         return this.books
     }
 }
 
-export const versions = [
+export const versionsList = [
     new Version("WEBBE", "7142879509583d59-04"),
     new Version("WEB", "9879dbb7cfe39e4d-04"),
     new Version("ASV", "06125adad2d5898a-01"),
-    new Version("RV", "40072c4a5aba4022-01"),
     new Version("KJV", "de4e12af7f28f599-02"),
 ];
 
+export const versionsById = _.mapKeys(versionsList, (version, index) => version.id);
+
+export const defaultVersion = versionsById["7142879509583d59-04"]

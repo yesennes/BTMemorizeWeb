@@ -1,3 +1,4 @@
+import ChapterSelector from './ChapterSelector';
 import React from 'react';
 import _ from "lodash";
 
@@ -16,15 +17,10 @@ export default class BTMemorize extends React.Component<{}, State> {
     }
 
     render(){
-        const versionSelector = _.map(api.versions, (version) =>
-            <option value={version.id}>{version.name}</option>
-        )
         return (
             <div className="App">
                 <div>Select a chapter to get started:</div>
-                <select name="Version">
-                    {versionSelector}
-                </select>
+                <ChapterSelector />
             </div>
         );
     }
