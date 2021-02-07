@@ -70,7 +70,7 @@ export default class ChapterSelector extends React.Component<Props, State> {
             if (this.state.bookSelected) {
                 const chapters = this.state.bookSelected.chapters;
                 chapterSelector = _.map(chapters, (chapter, index) =>
-                    <option key={chapter.number} value={chapter.number} selected={this.state.chapterSelected && chapter.number == this.state.chapterSelected.number}>{chapter.number}</option>
+                    <option key={chapter.number} value={index} selected={this.state.chapterSelected && chapter.number == this.state.chapterSelected.number}>{chapter.number}</option>
                 );
             }
         }
@@ -84,7 +84,9 @@ export default class ChapterSelector extends React.Component<Props, State> {
                 <select name="Book" onChange={event => this._onBookSelected(parseInt(event.target.value))}>
                     {bookSelector}
                 </select>
-                <select name="Chapter" onChange={event => this.setState({chapterSelected: this.state.bookSelected && this.state.bookSelected.chapters[parseInt(event.target.value)]})}>
+                <select name="Chapter" onChange={event => {
+                        this.setState({chapterSelected: this.state.bookSelected && this.state.bookSelected.chapters[parseInt(event.target.value)]})
+                    }}>
                     {chapterSelector}
                 </select>
                 <div>
