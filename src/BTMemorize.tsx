@@ -1,3 +1,4 @@
+import './App.css';
 import ChapterSelector from './ChapterSelector';
 import Memorization from './Memorization';
 import React from 'react';
@@ -8,8 +9,6 @@ type State = {
     selectedChapter?: api.Chapter,
     selectedVersion?: api.Version,
 }
-
-const key = "7b49bb79780270ec2aa314396b820813"
 
 export default class BTMemorize extends React.Component<{}, State> {
     constructor(props: {}) {

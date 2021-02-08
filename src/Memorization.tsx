@@ -110,7 +110,7 @@ export default class Memorization extends React.Component<Props, State> {
                     } else {
                         message = "You made " + state.result.penalty + " mistakes. Try again or continue?";
                     }
-                    const suggestedTypoAllotment = (state.current.startVerse - state.current.endVerse) * 3;
+                    const suggestedTypoAllotment = (state.current.endVerse - state.current.startVerse) * 4;
                     options = (
                         <div>
                             <div>{message}</div>
@@ -120,17 +120,21 @@ export default class Memorization extends React.Component<Props, State> {
                             </div>
                         </div>);
                 } else {
-                    options = <button onClick={() => this.setState({showVerse: true})}>Show Verse</button>;
+                    options = 
+                        <div>
+                            <button onClick={() => this.setState({showVerse: true})}>Show Verse</button>
+                            <button onClick={this.next}>Skip</button>
+                        </div>;
                 }
                 var edits = _.map(state.result.edits, (edit) => {
                     switch(edit.typ) {
                         case "match":
                         case "extra whiteSpace":
-                            return edit.inputText;
+                            return edit.targetText;
                         case "delete":
-                            return <del className="error">{edit.targetText}</del>;
+                            return <del className="error">{edit.inputText}</del>;
                         case "insert":
-                            return <ins className="error">{finished ? edit.targetText : '\u00A0'.repeat(edit.targetText.length)}</ins>;
+                            return <ins className="error">{finished ? edit.targetText : '\u25A1'.repeat(edit.targetText.length)}</ins>;
                     }
                 });
                 return (

@@ -41,13 +41,13 @@ export class Result {
 
 function comparator(a, b) {
     if (a.penalty == b.penalty) { 
-        if (a.lengthOfInput == b.lengthOfInput) {
-            if (a.lengthOfTarget == b.lengthOfTarget) {
+        if (a.lengthOfTarget == b.lengthOfTarget) {
+            if (a.lengthOfInput == b.lengthOfInput) {
                 return a.edits.length < b.edits.length;
             }
-            return a.lengthOfTarget > b.lengthOfTarget;
+            return a.lengthOfInput > b.lengthOfInput;
         }
-        return a.lengthOfInput > b.lengthOfInput;
+        return a.lengthOfTarget > b.lengthOfTarget;
     }
     return a.penalty < b.penalty;
 }
@@ -56,6 +56,8 @@ const equivalentPairs = [
     ["\n", " "],
     ["\u201c", "\""],
     ["\u201D", "\""],
+    ["'", "’"],
+    ["—", "-"],
 ];
 
 const equivalents: {[character: string]: {[character: string]: boolean}} = {
@@ -77,6 +79,7 @@ export class EditDistance {
     workspace: { [tarIndex: number]: {[inIndex: number]: Result}} = {};
     target: string;
     input: string = "";
+    farthest: number = 0;
 
     constructor(target) {
         this.target = target;
@@ -133,6 +136,11 @@ export class EditDistance {
     _push(res: Result) {
         if (!this.workspace[res.lengthOfTarget]) {
             this.workspace[res.lengthOfTarget] = {};
+        }
+        if (res.lengthOfTarget > this.farthest) {
+            this.farthest = res.lengthOfTarget;
+        } else if (this.farthest - res.lengthOfTarget > 30) {
+            return;
         }
         var existing = this.workspace[res.lengthOfTarget][res.lengthOfInput];
         if (!existing || comparator(existing, res)) {

@@ -203,7 +203,7 @@ class ESVChapter {
 
     async getText() : Promise<Array<string>> {
         var response = await fetch(
-            `https://api.esv.org/v3/passage/text/?q=${this.book}+${this.number}&include-passage-reference=false&include-footnotes=false&include-headings=false&include-short-copyright=false`,
+            `/esv/?q=${this.book}+${this.number}&include-passage-reference=false&include-footnotes=false&include-headings=false&include-short-copyright=false`,
             {
                 headers: new Headers({"Authorization": "Token 4632229beb9708b657a5a6fb218a396f0bb05fba"}),
                 method: "GET",
