@@ -9,7 +9,9 @@ type State = {
 }
 
 type Props = {
-    onSelected: (chapter: api.Chapter, version: api.Version) => void,
+    onSelected: (chapter: api.RecentChapter) => void,
+    onRecentRemoved: (chapter: api.RecentChapter) => void,
+    recentChapters: Array<api.RecentChapter>,
 }
 
 export default class ChapterSelector extends React.Component<Props, State> {
@@ -75,6 +77,13 @@ export default class ChapterSelector extends React.Component<Props, State> {
             }
         }
 
+        const recentChapters = _.map(this.props.recentChapters, (recent) => 
+            <div key={recent.chapter.toString()}>
+                {recent.chapter.toString()}
+                <button onClick={() => this.props.onSelected(recent)}>Select</button>
+                <button onClick={() => this.props.onRecentRemoved(recent)}>Remove</button>
+            </div>);
+
 
         return (
             <div className="App">
@@ -90,8 +99,9 @@ export default class ChapterSelector extends React.Component<Props, State> {
                     {chapterSelector}
                 </select>
                 <div>
-                    <button type="button" onClick={event => this.props.onSelected(this.state.chapterSelected as api.Chapter, this.state.versionSelected as api.Version)}>Select</button>
+                    <button type="button" onClick={event => this.props.onSelected({chapter: this.state.chapterSelected, progress:{start: 1, end: 1}})}>Select</button>
                 </div>
+                {recentChapters}
             </div>
         );
     }

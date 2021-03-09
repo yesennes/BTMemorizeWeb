@@ -3,8 +3,7 @@ import _ from "lodash";
 import React from 'react';
 
 const baseUrl = "https://api.scripture.api.bible/v1/";
-
-const key = "7b49bb79780270ec2aa314396b820813"
+const key = ""
 
 async function apiFetch(path: string): Promise<any> {
     return (await fetch(baseUrl + path, {
@@ -16,6 +15,8 @@ async function apiFetch(path: string): Promise<any> {
 export interface Chapter {
     name: string;
     number: number;
+    version: Version;
+    book: Book;
     getText:() => Promise<Array<string>>;
 }
 
@@ -29,6 +30,8 @@ class APIChapter {
     bibleId: string;
     number: number;
     bookId: string;
+    version: Version;
+    book: Book;
 
     constructor(obj: any) {
         this.name = obj.name;
@@ -36,6 +39,8 @@ class APIChapter {
         this.bibleId = obj.bibleId;
         this.number = parseInt(obj.number)
         this.bookId = obj.bookId;
+        this.version= obj.version;
+        this.book = obj.book;
     }
 
     async getText(): Promise<Array<string>> {
@@ -54,6 +59,7 @@ class APIBook {
     name: string;
     bibleId: string;
     chapters: Array<Chapter>;
+    version: Version;
 
     constructor(obj: any) {
         this.name = obj.name;
@@ -62,8 +68,9 @@ class APIBook {
         this.chapters = _.chain(obj.chapters)
             // Filter out introductions etc
             .filter(chapter => !isNaN(chapter.number))
-            .map(chapter => new APIChapter(chapter))
+            .map(chapter => new APIChapter({...chapter, version: this.version, book: this}))
             .value();
+        this.version = obj.version;
     }
 }
 
@@ -89,7 +96,7 @@ class APIVersion {
     async getBooks(): Promise<Array<Book>> {
         if (!this.books) {
             const response = await apiFetch("bibles/" + this.id + "/books?include-chapters=true");
-            this.books = _.map(response.data, book => new APIBook(book));
+            this.books = _.map(response.data, book => new APIBook({...book, version:this}));
         }
         return this.books
     }
@@ -183,7 +190,7 @@ class ESVBook {
         this.name = name;
         this.chapters = [];
         for (var i = 1; i <= chapters; i++) {
-            this.chapters.push(new ESVChapter(name, i));
+            this.chapters.push(new ESVChapter(this, i));
         }
     }
 }
@@ -192,10 +199,13 @@ var esvRegex = /\[(\d+)]([^\[]*)/g
 
 class ESVChapter {
     name: string;
-    book: string;
     number: number;
+    get version() {
+        return esv;
+    }
+    book: ESVBook;
 
-    constructor(book: string, number: number) {
+    constructor(book: ESVBook, number: number) {
         this.book = book;
         this.name = number.toString();
         this.number = number;
@@ -203,7 +213,7 @@ class ESVChapter {
 
     async getText() : Promise<Array<string>> {
         var response = await fetch(
-            `/esv/?q=${this.book}+${this.number}&include-passage-reference=false&include-footnotes=false&include-headings=false&include-short-copyright=false`,
+            `/esv/?q=${this.book.name}+${this.number}&include-passage-reference=false&include-footnotes=false&include-headings=false&include-short-copyright=false`,
             {
                 headers: new Headers({"Authorization": "Token 4632229beb9708b657a5a6fb218a396f0bb05fba"}),
                 method: "GET",
@@ -221,18 +231,32 @@ class ESVChapter {
         }
         return result;
     }
+
+    toString() : string {
+        return this.book.name + " " + this.name;
+    }
 }
 
 var esv = new ESV();
 
 export const versionsList: Array<Version> = [
-    new APIVersion("WEBBE", "7142879509583d59-04"),
-    new APIVersion("WEB", "9879dbb7cfe39e4d-04"),
-    new APIVersion("ASV", "06125adad2d5898a-01"),
-    new APIVersion("KJV", "de4e12af7f28f599-02"),
+    //new APIVersion("WEBBE", "7142879509583d59-04"),
+    //new APIVersion("WEB", "9879dbb7cfe39e4d-04"),
+    //new APIVersion("ASV", "06125adad2d5898a-01"),
+    //new APIVersion("KJV", "de4e12af7f28f599-02"),
     esv,
 ];
 
 export const versionsByName = _.mapKeys(versionsList, (version, index) => version.name);
 
 export const defaultVersion = esv;
+
+export type Progress = {
+    start: number,
+    end: number,
+}
+
+export type RecentChapter = {
+    chapter: Chapter,
+    progress: Progress,
+}

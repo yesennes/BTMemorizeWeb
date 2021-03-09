@@ -4,8 +4,8 @@ import {EditDistance, Result} from "./EditDistance";
 import _ from 'lodash';
 
 type Props = {
-    chapter: api.Chapter
-    version: api.Version
+    chapter: api.RecentChapter,
+    onSetProgress: (chapter: api.RecentChapter) => void,
 }
 
 type State = {
@@ -14,6 +14,7 @@ type State = {
     result: Result
     mistake?: string,
     showVerse: boolean,
+    text: Array<string>,
 }
 
 class TreeNode {
@@ -38,7 +39,6 @@ class TreeNode {
 }
 
 export default class Memorization extends React.Component<Props, State> {
-    nextButton: React.RefObject<HTMLButtonElement> = React.createRef();
     constructor(props: Props) {
         super(props);
         this.textEntered = this.textEntered.bind(this);
@@ -47,12 +47,21 @@ export default class Memorization extends React.Component<Props, State> {
     }
 
     componentDidMount() {
-        this.props.chapter.getText().then(text => {
+        this.props.chapter.chapter.getText().then(text => {
             var tree: TreeNode = new TreeNode(text, 1, text.length);
-            while (tree.left) {
-                tree = tree.left;
+            var change = true;
+            while (change) {
+                change = false;
+                if (tree.left && tree.left.endVerse >= this.props.chapter.progress.end && tree.left.startVerse <= this.props.chapter.progress.end) {
+                    tree = tree.left;
+                    change = true;
+                }
+                if (tree.right && tree.right.startVerse <= this.props.chapter.progress.start && tree.right.endVerse >= this.props.chapter.progress.end) {
+                    tree = tree.right;
+                    change = true;
+                }
             }
-            this.setState({current: tree, showVerse: false})
+            this.setState({text, current: tree, showVerse: false})
             this.setVerse()
         });
     }
@@ -83,6 +92,7 @@ export default class Memorization extends React.Component<Props, State> {
             } else {
                 current = current.parent;
             }
+            this.props.onSetProgress({chapter: this.props.chapter.chapter, progress: {start: current.startVerse, end:current.endVerse}});
             this.setVerse(current);
         }
     }
@@ -115,15 +125,23 @@ export default class Memorization extends React.Component<Props, State> {
                         <div>
                             <div>{message}</div>
                             <div>
-                                {state.current.parent && <button autoFocus={state.result.penalty < suggestedTypoAllotment} onClick={this.next} ref={this.nextButton}>Next Section</button>}
-                                <button autoFocus={state.result.penalty >= suggestedTypoAllotment} onClick={() => this.setVerse()}>Reset</button>
+                                {state.current.parent && <button onClick={this.next} ref={ref => {if (ref && state.result.penalty < suggestedTypoAllotment) ref.focus()}}>Next Section</button>}
+                                <button ref={ref => {if (ref && state.result.penalty >= suggestedTypoAllotment) ref.focus()}} onClick={() => this.setVerse()}>Reset</button>
                             </div>
                         </div>);
                 } else {
                     options = 
                         <div>
-                            <button onClick={() => this.setState({showVerse: true})}>Show Verse</button>
-                            <button onClick={this.next}>Skip</button>
+                            <div>
+                                <button onClick={() => this.setState({showVerse: true})}>Show Verse</button>
+                                <button onClick={this.next}>Skip</button>
+                            </div>
+                            <div>
+                                <button onClick={() => this.setState({current: this.state.current.left})} disabled={!this.state.current.left}>Focus First Half</button>
+                            </div>
+                            <div>
+                                <button onClick={() => this.setState({current: this.state.current.right})} disabled={!this.state.current.right}>Focus Second Half</button>
+                            </div>
                         </div>;
                 }
                 var edits = _.map(state.result.edits, (edit) => {
@@ -134,19 +152,22 @@ export default class Memorization extends React.Component<Props, State> {
                         case "delete":
                             return <del className="error">{edit.inputText}</del>;
                         case "insert":
-                            return <ins className="error">{finished ? edit.targetText : '\u25A1'.repeat(edit.targetText.length)}</ins>;
+                            //Use Boxes to represent missed characters without revealing them
+                            return <span className="error">{finished ? edit.targetText : '\u2610'.repeat(edit.targetText.length)}</span>;
                     }
                 });
                 return (
                     <div>
                         Enter Verses {state.current.startVerse}-{state.current.endVerse - 1}:
+                        {state.current.startVerse > 1 && <div className="error">{state.text[state.current.startVerse - 1]}...</div>}
                         <div>
                             {edits}{finished ? null : <input autoFocus type="text" onChange={this.textEntered} />}
                         </div>
+                        ...{state.current.endVerse + 1 < state.text.length && <div className="error">{state.text[state.current.endVerse + 1]}</div>}
                         <div>
                             {options}
                         </div>
-                        {this.props.version.copyRight}
+                        {this.props.chapter.chapter.version.copyRight}
                     </div>);
             }
         } else {
