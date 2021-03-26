@@ -159,11 +159,11 @@ export default class Memorization extends React.Component<Props, State> {
                 return (
                     <div>
                         Enter Verses {state.current.startVerse}-{state.current.endVerse - 1}:
-                        {state.current.startVerse > 1 && <div className="error">{state.text[state.current.startVerse - 1]}...</div>}
+                        {state.current.startVerse > 1 && <div><div className="error">{state.text[state.current.startVerse - 1]}</div><div>...</div></div>}
                         <div>
                             {edits}{finished ? null : <input autoFocus type="text" onChange={this.textEntered} />}
                         </div>
-                        ...{state.current.endVerse + 1 < state.text.length && <div className="error">{state.text[state.current.endVerse + 1]}</div>}
+                        {state.current.endVerse < state.text.length && <div>...<div className="error">{state.text[state.current.endVerse]}</div></div>}
                         <div>
                             {options}
                         </div>

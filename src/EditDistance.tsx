@@ -1,6 +1,11 @@
 import _ from "lodash";
 import PriorityQueue from "./PriorityQueue";
 
+export type Tokenized = {
+    [ index: number ] : string;
+    length: number;
+}
+
 export type Edit = {
     typ: string;
     targetText: string;
@@ -78,7 +83,7 @@ export class EditDistance {
     priorityQueue = new PriorityQueue(comparator);
     workspace: { [tarIndex: number]: {[inIndex: number]: Result}} = {};
     target: string;
-    input: string = "";
+    input: Array<string> = [];
     farthest: number = 0;
 
     constructor(target) {
@@ -90,8 +95,10 @@ export class EditDistance {
         return this.priorityQueue.peek();
     }
 
-    feed(input: string): Result {
-        this.input += input;
+    feed(input: Tokenized): Result {
+        for (var i = 0; i < input.length; i++) {
+            this.input.push(input[i]);
+        }
         while (this.priorityQueue.peek().lengthOfInput < this.input.length) {
             this._calculate();
         }
