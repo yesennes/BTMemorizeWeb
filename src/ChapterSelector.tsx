@@ -30,7 +30,7 @@ export default class ChapterSelector extends React.Component<Props, State> {
         const books = await version.getBooks();
         let bookSelected;
         if (this.state.bookSelected) {
-            bookSelected = _.find(books, book => this.state.bookSelected && this.state.bookSelected.name == book.name) as api.Book;
+            bookSelected = _.find(books, book => this.state.bookSelected && this.state.bookSelected.name == book.name);
         }
         if (!bookSelected) {
             bookSelected = books[0];

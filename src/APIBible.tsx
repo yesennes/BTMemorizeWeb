@@ -2,14 +2,21 @@ import './App.css'
 import _ from "lodash";
 import React from 'react';
 
-const baseUrl = "https://api.scripture.api.bible/v1/";
+const baseUrl = "/v1/";
 const key = ""
 
 async function apiFetch(path: string): Promise<any> {
-    return (await fetch(baseUrl + path, {
+    var result = await fetch(baseUrl + path, {
         headers: new Headers({"api-key": key}),
         method: "GET",
-    })).json();
+    });
+
+    if (result.ok) {
+        return result.json();
+    } else {
+        console.error(result);
+        throw result;
+    }
 }
 
 export interface Chapter {
@@ -243,7 +250,7 @@ export const versionsList: Array<Version> = [
     //new APIVersion("WEBBE", "7142879509583d59-04"),
     //new APIVersion("WEB", "9879dbb7cfe39e4d-04"),
     //new APIVersion("ASV", "06125adad2d5898a-01"),
-    //new APIVersion("KJV", "de4e12af7f28f599-02"),
+    new APIVersion("KJV", "de4e12af7f28f599-02"),
     esv,
 ];
 
