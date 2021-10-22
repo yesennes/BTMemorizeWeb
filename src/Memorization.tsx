@@ -42,6 +42,7 @@ export default class Memorization extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.textEntered = this.textEntered.bind(this);
+        this.textEnteredEvent = this.textEnteredEvent.bind(this);
         this.next = this.next.bind(this);
         this.setVerse = this.setVerse.bind(this);
     }
@@ -66,10 +67,14 @@ export default class Memorization extends React.Component<Props, State> {
         });
     }
 
-    textEntered(event: React.ChangeEvent<HTMLInputElement>) {
-        var res = this.state.comparer.feed(event.target.value);
-        this.setState({result: res});
+    textEnteredEvent(event: React.ChangeEvent<HTMLInputElement>) {
+    	this.textEntered(event.target.value);
         event.target.value = "";
+    }
+
+    textEntered(text: string) {
+        var res = this.state.comparer.feed(text);
+        this.setState({result: res});
     }
 
     setVerse(tree?: TreeNode) {
@@ -135,6 +140,7 @@ export default class Memorization extends React.Component<Props, State> {
                             <div>
                                 <button onClick={() => this.setState({showVerse: true})}>Show Verse</button>
                                 <button onClick={this.next}>Skip</button>
+				<button onClick={() => this.textEntered(state.current.text.slice(state.result.lengthOfTarget).match(`\\s*\\S+`)[0])}>Hint</button>
                             </div>
                             <div>
                                 <button onClick={() => this.setState({current: this.state.current.left})} disabled={!this.state.current.left}>Focus First Half</button>
@@ -161,7 +167,7 @@ export default class Memorization extends React.Component<Props, State> {
                         Enter Verses {state.current.startVerse}-{state.current.endVerse - 1}:
                         {state.current.startVerse > 1 && <div><div className="error">{state.text[state.current.startVerse - 1]}</div><div>...</div></div>}
                         <div>
-                            {edits}{finished ? null : <input autoFocus type="text" onChange={this.textEntered} />}
+                            {edits}{finished ? null : <input autoFocus type="text" onChange={this.textEnteredEvent} />}
                         </div>
                         {state.current.endVerse < state.text.length && <div>...<div className="error">{state.text[state.current.endVerse]}</div></div>}
                         <div>
